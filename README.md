@@ -314,6 +314,149 @@ if __name__ == "__main__":
 # Output:
 <img width="1902" height="1057" alt="image" src="https://github.com/user-attachments/assets/a324c2ca-3e66-4f86-b910-e3eb50554bde" />
 
- 
+# Task-2:
+ # Selenium code :
+```
+import time
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 
+
+def add_and_display_cart_product():
+  # Setup Chrome Options with anti-bot evasion
+  options = webdriver.ChromeOptions()
+  options.add_experimental_option("detach", True)
+  options.add_argument("--disable-blink-features=AutomationControlled")
+  options.add_experimental_option("excludeSwitches", ["enable-automation"])
+  options.add_argument(
+      "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      " AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  )
+
+  driver = webdriver.Chrome(
+      service=Service(ChromeDriverManager().install()), options=options
+  )
+  wait = WebDriverWait(driver, 15)
+
+  # Bypass webdriver property flag
+  driver.execute_cdp_cmd(
+      "Page.addScriptToEvaluateOnNewDocument",
+      {
+          "source": (
+              "Object.defineProperty(navigator, 'webdriver', {get: () =>"
+              " undefined})"
+          )
+      },
+  )
+
+  try:
+    driver.maximize_window()
+
+    # Step 1: Open Amazon
+    url = "https://www.amazon.in"
+    print(f"1. Navigating to: {url}")
+    driver.get(url)
+    time.sleep(2)
+
+    # Step 2: Search for a Product
+    search_query = "wireless mouse"
+    print(f"2. Searching for: '{search_query}'")
+
+    search_box = wait.until(
+        EC.element_to_be_clickable((By.ID, "twotabsearchtextbox"))
+    )
+    search_box.clear()
+    search_box.send_keys(search_query)
+    search_box.send_keys(Keys.ENTER)
+    time.sleep(2)
+
+    # Step 3: Select First Organic Search Product
+    print("3. Selecting first product...")
+    first_product_link = wait.until(
+        EC.element_to_be_clickable((
+            By.XPATH,
+            "(//div[@data-component-type='s-search-result']//h2/a)[1]",
+        ))
+    )
+    first_product_link.click()
+    time.sleep(3)
+
+    # Step 4: Switch to Product Tab
+    driver.switch_to.window(driver.window_handles[-1])
+    time.sleep(2)
+
+    # Step 5: Click Add to Cart
+    print("4. Adding product to cart...")
+    add_to_cart_btn = wait.until(
+        EC.presence_of_element_located((By.ID, "add-to-cart-button"))
+    )
+    driver.execute_script(
+        "arguments[0].scrollIntoView(true);", add_to_cart_btn
+    )
+    time.sleep(1)
+    driver.execute_script("arguments[0].click();", add_to_cart_btn)
+    print("   ✓ Product added!")
+    time.sleep(3)
+
+    # Step 6: Go to Cart Page
+    print("5. Navigating to Cart Page...")
+    driver.get("https://www.amazon.in/gp/cart/view.html")
+    time.sleep(3)
+
+    # =========================================================
+    # PART ADDED: DISPLAY PRODUCT DETAILS FROM CART PAGE
+    # =========================================================
+
+    # Wait for Cart container to load
+    wait.until(
+        EC.presence_of_element_located(
+            (By.CLASS_NAME, "sc-list-item-content")
+        )
+    )
+
+    # Extract Product Title in Cart
+    product_title = driver.find_element(
+        By.XPATH,
+        "//span[contains(@class, 'sc-product-title') or contains(@class,"
+        " 'a-truncate-cut')]",
+    ).text.strip()
+
+    # Extract Product Price in Cart
+    try:
+      product_price = driver.find_element(
+          By.XPATH,
+          "//div[contains(@class, 'sc-badge-price-to-pay')]//span[contains(@class,"
+          " 'sc-price')] | //span[contains(@class, 'sc-product-price')]",
+      ).text.strip()
+    except Exception:
+      product_price = "N/A"
+
+    # Display Extracted Details in Console
+    print("\n" + "=" * 50)
+    print("🛒 ITEM DISPLAYED IN CART:")
+    print(f"📌 Product Name : {product_title}")
+    print(f"💰 Price        : {product_price}")
+    print("=" * 50)
+
+    # Save screenshot confirming the item display
+    driver.save_screenshot("cart_item_details.png")
+    print("✓ Saved screenshot as 'cart_item_details.png'")
+
+  except Exception as e:
+    print(f"\n❌ Error encountered: {e}")
+
+
+if __name__ == "__main__":
+  add_and_display_cart_product()
+```
     
+# output:
+<img width="1906" height="1037" alt="image" src="https://github.com/user-attachments/assets/d8d8cfa8-c3e6-4512-87a4-a91bfebacaed" />
+<img width="1882" height="966" alt="image" src="https://github.com/user-attachments/assets/b02ee532-9ba2-44e6-b2f6-9aa71196fb5d" />
+
+<img width="1902" height="1028" alt="image" src="https://github.com/user-attachments/assets/eaac16bf-8d8c-414b-84e2-384411bebc2a" />
